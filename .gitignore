@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Cloudflare Wrangler
+.wrangler/
+
+# Env / secrets
+.env
+.env.*.local
+.dev.vars
+
+# Editors
+.zed/
+.vscode/
+.idea/
+
+# Expo
+.expo/
+
+# Logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+pnpm-debug.*
+
+# TypeScript
+*.tsbuildinfo
+
+# Generated
+expo-env.d.ts
+uniwind-types.d.ts
+
+# macOS
+.DS_Store

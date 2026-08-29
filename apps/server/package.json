@@ -1,0 +1,17 @@
+{
+  "name": "server",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "@api-wrappers/igdb-wrapper": "^1.1.1",
+    "hono": "^4.13.1"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "wrangler": "^4.110.0"
+  }
+}
