@@ -1,13 +1,22 @@
-import { IGDBClient } from "@api-wrappers/igdb-wrapper";
+import { z } from "zod";
 import { Hono } from "hono";
+import { IGDBClient } from "@api-wrappers/igdb-wrapper";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
-app.get("/", async (c) => {
+app.get("/health", async (c) => {
   return c.text("Ok");
 });
 
-app.get("/", async (c) => {
+app.get("/games/search", async (c) => {
+  const queryResult = z.string().min(1).safeParse(c.req.query("q"));
+
+  if (queryResult.error) {
+    return c.json({ error: "Invalid Query" }, 400);
+  }
+
+  const query = queryResult.data;
+
   const client = new IGDBClient({
     clientId: c.env.TWITCH_CLIENT_ID,
     clientSecret: c.env.TWITCH_SECRET,
@@ -17,12 +26,11 @@ app.get("/", async (c) => {
     .query()
     .select((g) => ({
       name: g.name,
-      raging: g.rating,
-      cover: g.cover?.url,
-      artworks: { imageId: g.artworks.image_id },
+      releaseYear: g.first_release_date,
+      coverUrl: g.cover?.url,
     }))
-    .search("Witcher 3")
-    .limit(10)
+    .search(query)
+    .limit(20)
     .execute();
 
   return c.json(games);
