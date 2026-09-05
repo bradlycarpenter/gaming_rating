@@ -1,45 +1,105 @@
-import { Card, Input } from "heroui-native";
-import { FlatList, View } from "react-native";
+import { searchGames } from "@/api/games";
+import { GameSummary } from "@/types";
+import { useDebouncedCallback } from "@/utils";
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "heroui-native/button";
+import { Card } from "heroui-native/card";
+import { Input } from "heroui-native/input";
+import { useState } from "react";
+import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-function GameCard() {
+function SearchHeader({ onChangeText }: { onChangeText: (text: string) => void }) {
   return (
-    <Card className="flex-1">
-      <Card.Header>Header</Card.Header>
-      <Card.Body>
-        <Card.Title>Title</Card.Title>
-        <Card.Description>Description</Card.Description>
-      </Card.Body>
-      <Card.Footer>
-        <Card.Description>Footer</Card.Description>
-      </Card.Footer>
+    <View className="py-2">
+      <Input placeholder="Search games.." onChangeText={onChangeText} />
+    </View>
+  );
+}
+
+function GameCard({ game }: { game: GameSummary }) {
+  const releaseDate = game.first_release_date
+    ? new Date(game.first_release_date * 1000)
+    : undefined;
+
+  return (
+    <Card className="flex-1 flex-row gap-4">
+      {game.cover?.url && (
+        <Image source={{ uri: "https:" + game.cover?.url }} className="size-12 rounded-lg" />
+      )}
+      <View className="flex-1">
+        <Card.Header>
+          <Text className="text-xs" numberOfLines={1}>
+            {game.name}
+          </Text>
+        </Card.Header>
+        {releaseDate && (
+          <Card.Body>
+            <Card.Description className="text-xs">
+              {releaseDate?.toLocaleDateString()}
+            </Card.Description>
+          </Card.Body>
+        )}
+      </View>
     </Card>
   );
 }
 
-const MOCK_GAMES = [
-  { id: "1" },
-  { id: "2" },
-  { id: "3" },
-];
+function EmptyState({
+  isError,
+  isLoading,
+  query,
+  refetch,
+}: {
+  isError: boolean;
+  isLoading: boolean;
+  query: string;
+  refetch: () => void;
+}) {
+  if (isError)
+    return (
+      <View className="flex flex-col gap-2">
+        <Text>We had trouble getting results, please try again</Text>
+        <Button onPress={() => refetch()}>Reload</Button>
+      </View>
+    );
+
+  if (isLoading) return <ActivityIndicator />;
+
+  if (query) return <Text>{"No results"}</Text>;
+}
 
 export default function HomeTab() {
+  const [query, setQuery] = useState("");
+  const debouncedSetQuery = useDebouncedCallback(setQuery, 500);
+  const {
+    data: games,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["games", query],
+    queryFn: ({ signal }) => searchGames(query, signal),
+    enabled: !!query,
+  });
+
   return (
     <SafeAreaView className="flex-1">
-      <FlatList
-        data={MOCK_GAMES}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        renderItem={() => <GameCard />}
-        columnWrapperStyle={{ gap: 8 }}
-        ItemSeparatorComponent={() => <View className="h-2" />}
-        contentContainerStyle={{ padding: 8 }}
-        ListHeaderComponent={
-          <View className="pb-2">
-            <Input placeholder="Search games..." />
-          </View>
-        }
-      />
+      <View className="px-2">
+        <FlatList
+          data={games}
+          keyExtractor={(item) => String(item.id)}
+          numColumns={2}
+          columnWrapperStyle={{ gap: 8 }}
+          contentContainerStyle={{ padding: 2 }}
+          ItemSeparatorComponent={() => <View className="h-2" />}
+          ListHeaderComponent={<SearchHeader onChangeText={debouncedSetQuery} />}
+          ListEmptyComponent={
+            <EmptyState isError={isError} isLoading={isLoading} query={query} refetch={refetch} />
+          }
+          renderItem={({ item }) => <GameCard game={item} />}
+        />
+      </View>
     </SafeAreaView>
   );
 }
