@@ -1,7 +1,7 @@
 import { searchGames } from "@/api/games";
 import { GameSummary } from "@/types";
 import { useDebouncedCallback } from "@/utils";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Button } from "heroui-native/button";
 import { Card } from "heroui-native/card";
 import { Input } from "heroui-native/input";
@@ -47,12 +47,12 @@ function GameCard({ game }: { game: GameSummary }) {
 
 function EmptyState({
   isError,
-  isLoading,
+  isFetching,
   query,
   refetch,
 }: {
   isError: boolean;
-  isLoading: boolean;
+  isFetching: boolean;
   query: string;
   refetch: () => void;
 }) {
@@ -64,7 +64,7 @@ function EmptyState({
       </View>
     );
 
-  if (isLoading) return <ActivityIndicator />;
+  if (isFetching) return <ActivityIndicator />;
 
   if (query) return <Text>{"No results"}</Text>;
 }
@@ -74,13 +74,14 @@ export default function HomeTab() {
   const debouncedSetQuery = useDebouncedCallback(setQuery, 500);
   const {
     data: games,
-    isLoading,
+    isFetching,
     isError,
     refetch,
   } = useQuery({
     queryKey: ["games", query],
     queryFn: ({ signal }) => searchGames(query, signal),
     enabled: !!query,
+    placeholderData: keepPreviousData
   });
 
   return (
@@ -95,7 +96,7 @@ export default function HomeTab() {
           ItemSeparatorComponent={() => <View className="h-2" />}
           ListHeaderComponent={<SearchHeader onChangeText={debouncedSetQuery} />}
           ListEmptyComponent={
-            <EmptyState isError={isError} isLoading={isLoading} query={query} refetch={refetch} />
+            <EmptyState isError={isError} isFetching={isFetching} query={query} refetch={refetch} />
           }
           renderItem={({ item }) => <GameCard game={item} />}
         />
