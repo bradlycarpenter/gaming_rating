@@ -20,10 +20,10 @@ export default function TabsLayout(): JSX.Element {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="profile"
         options={{
-          title: "Explore",
-          tabBarIcon: ({ color }) => <TabIcon name="compass-outline" color={color} />,
+          title: "Profile",
+          tabBarIcon: ({ color }) => <TabIcon name="person" color={color} />,
         }}
       />
     </Tabs>

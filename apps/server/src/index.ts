@@ -1,8 +1,11 @@
 import { z } from "zod";
 import { Hono } from "hono";
 import { IGDBClient } from "@api-wrappers/igdb-wrapper";
+import { createAuth } from "./auth.ts";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
+
+app.on(["POST", "GET"], "/api/auth/*", (c) => createAuth(c.env).handler(c.req.raw));
 
 app.get("/health", async (c) => {
   return c.text("Ok");
