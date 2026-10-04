@@ -6,6 +6,7 @@ import {
   index,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
+import { v7 as uuidv7 } from "uuid";
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -98,4 +99,87 @@ export const verification = sqliteTable(
       .notNull(),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
+
+export const game = sqliteTable("game", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  name: text("name").notNull(),
+  coverUrl: text("cover_url"),
+  releaseDate: integer("release_date", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const externalGameProvider = sqliteTable("external_game_provider", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  baseUrl: text("base_url").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+});
+
+export const gameProviderMapping = sqliteTable(
+  "game_provider_mapping",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    gameId: text("game_id")
+      .notNull()
+      .references(() => game.id, { onDelete: "cascade" }),
+    providerId: text("provider_id")
+      .notNull()
+      .references(() => externalGameProvider.id, { onDelete: "cascade" }),
+    gameProviderId: text("game_provider_id").notNull(),
+  },
+  (table) => [
+    uniqueIndex("game_provider_mapping_gameId_providerId_uidx").on(
+      table.gameId,
+      table.providerId,
+    ),
+    uniqueIndex("game_provider_mapping_providerId_gameProviderId_uidx").on(
+      table.providerId,
+      table.gameProviderId,
+    ),
+  ],
+);
+
+export const gameRating = sqliteTable(
+  "game_rating",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    gameId: text("game_id")
+      .notNull()
+      .references(() => game.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    rating: integer("rating").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("game_rating_gameId_userId_uidx").on(
+      table.gameId,
+      table.userId,
+    ),
+  ],
 );

@@ -1,39 +1,39 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "gaming_rating_server",
-	"main": "src/index.ts",
-	"compatibility_date": "2026-08-08",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
-	// "vars": {
-	//   "MY_VAR": "my-variable"
-	// },
-	"kv_namespaces": [
-		{
-			"binding": "kv_gr",
-			"id": "f3481848fb7c46e68c452ecd15d158f7",
-		},
-	],
-	// "r2_buckets": [
-	//   {
-	//     "binding": "MY_BUCKET",
-	//     "bucket_name": "my-bucket"
-	//   }
-	// ],
-	"d1_databases": [
-		{
-			"binding": "d1_gr",
-			"database_name": "gr-db",
-			"database_id": "ff4593ec-a081-44b7-bcaa-150cb0c7acc9",
-		},
-	],
-	// ],
-	// "ai": {
-	//   "binding": "AI"
-	// },
-	// "observability": {
-	//   "enabled": true,
-	//   "head_sampling_rate": 1
-	// }
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gaming_rating_server",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-08",
+  "compatibility_flags": ["nodejs_compat"],
+  // "vars": {
+  //   "MY_VAR": "my-variable"
+  // },
+  "kv_namespaces": [
+    {
+      "binding": "kv_gr",
+      "id": "f3481848fb7c46e68c452ecd15d158f7",
+    },
+  ],
+  // "r2_buckets": [
+  //   {
+  //     "binding": "MY_BUCKET",
+  //     "bucket_name": "my-bucket"
+  //   }
+  // ],
+  "d1_databases": [
+    {
+      "binding": "d1_gr",
+      "database_name": "gr-db",
+      "database_id": "ff4593ec-a081-44b7-bcaa-150cb0c7acc9",
+      "migrations_dir": "drizzle",
+      "migrations_pattern": "drizzle/*/migration.sql",
+    },
+  ],
+  // ],
+  // "ai": {
+  //   "binding": "AI"
+  // },
+  // "observability": {
+  //   "enabled": true,
+  //   "head_sampling_rate": 1
+  // }
 }
